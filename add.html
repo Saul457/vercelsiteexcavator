@@ -1,0 +1,32 @@
+async function uploadData() {
+    const photoInput = document.getElementById('photo');
+    const captionInput = document.getElementById('caption');
+    const status = document.getElementById('status');
+
+    if (!photoInput.files[0]) {
+        alert("يا ريس، اختار صورة أولاً! 🏗️");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('photo', photoInput.files[0]);
+    formData.append('caption', captionInput.value);
+
+    status.innerText = "جاري الإرسال... 🚀";
+
+    try {
+        // لاحظ الرابط هنا اتغير بقى لـ /api/
+        const response = await axios.post('/api/send-telegram', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        if (response.status === 200) {
+            alert("تم الإرسال بنجاح! ✅");
+            status.innerText = "تم الإرسال!";
+        }
+    } catch (error) {
+        console.error(error);
+        alert("فشل الإرسال. تأكد من إعدادات Vercel ❌");
+        status.innerText = "خطأ في الإرسال";
+    }
+}
