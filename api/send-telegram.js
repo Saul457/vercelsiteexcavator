@@ -8,7 +8,8 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const form = new multiparty.Form();
+    // Vercel يحتاج أحياناً لتحديد مسار مؤقت للملفات
+    const form = new multiparty.Form({ uploadDir: '/tmp' });
 
     form.parse(req, async (err, fields, files) => {
         if (err) {
@@ -19,32 +20,34 @@ module.exports = async (req, res) => {
         const chatId = process.env.TELEGRAM_CHAT_ID;
 
         if (!token || !chatId) {
-            return res.status(500).json({ error: 'Missing Configuration' });
+            return res.status(500).json({ error: 'Missing Telegram Configuration' });
         }
 
         const caption = fields.caption ? fields.caption[0] : '';
-        const photo = files.photo ? files.photo[0] : null;
+        const photo = (files.photo && files.photo[0]) ? files.photo[0] : null;
 
         try {
-            if (photo) {
+            if (photo && photo.size > 0) {
                 const formData = new FormData();
                 formData.append('chat_id', chatId);
                 formData.append('caption', caption);
                 formData.append('photo', fs.createReadStream(photo.path));
 
                 await axios.post(`https://api.telegram.org/bot${token}/sendPhoto`, formData, {
-                    headers: formData.getHeaders()
+                    headers: formData.getHeaders(),
                 });
             } else {
                 await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
                     chat_id: chatId,
-                    text: caption
+                    text: caption,
                 });
             }
 
             return res.status(200).json({ message: 'Success' });
         } catch (error) {
-            return res.status(500).json({ error: 'Telegram API Error' });
+            // سجل الخطأ بالتفصيل في الـ Logs عشان نشوفه المرة الجاية
+            console.error('Telegram Error:', error.response ? error.response.data : error.message);
+            return res.status(500).json({ error: 'Telegram API Failure' });
         }
     });
 };
