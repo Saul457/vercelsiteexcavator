@@ -3,94 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إضافة معدة جديدة</title>
-    <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; direction: rtl; }
-        .form-container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        h2 { text-align: center; color: #2c3e50; border-bottom: 3px solid #f39c12; padding-bottom: 10px; }
-        label { display: block; margin-top: 15px; font-weight: bold; color: #34495e; }
-        input, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        input:focus, textarea:focus { border-color: #f39c12; outline: none; }
-        textarea { height: 80px; resize: none; }
-        .btn-send { width: 100%; padding: 15px; background-color: #f39c12; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        .btn-send:hover { background-color: #d35400; }
-        .btn-send:disabled { background-color: #ccc; }
-    </style>
+    <title>إضافة معدة | KARASUMA</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="form-container">
-    <h2>➕ إضافة معدة للبيع</h2>
-    
-    <label>🚜 نوع المعدة:</label>
-    <input type="text" id="machineName" placeholder="مثلاً: هيونداي داش ناين">
-
-    <label>📅 سنة الصنع:</label>
-    <input type="number" id="machineYear" placeholder="مثلاً: 2022">
-
-    <label>📞 رقم التواصل:</label>
-    <input type="tel" id="machinePhone" placeholder="09xxxxxxx">
-
-    <label>📝 وصف إضافي:</label>
-    <textarea id="machineDesc" placeholder="حالة الطلمبة، الهيدروليك، إلخ..."></textarea>
-
-    <label>📸 صورة المعدة:</label>
-    <input type="file" id="machinePhoto" accept="image/*">
-
-    <button onclick="sendData()" id="sendBtn" class="btn-send">🚀 إرسال للتلجرام</button>
-</div>
-
-<script>
-async function sendData() {
-    const btn = document.getElementById('sendBtn');
-    const name = document.getElementById('machineName').value;
-    const year = document.getElementById('machineYear').value;
-    const phone = document.getElementById('machinePhone').value;
-    const desc = document.getElementById('machineDesc').value;
-    const photoFile = document.getElementById('machinePhoto').files[0];
-
-    if (!name || !phone || !photoFile) {
-        alert("يا هندسة، لازم تملأ الاسم والرقم وترفع الصورة!");
-        return;
-    }
-
-    btn.innerText = "⏳ جاري الإرسال...";
-    btn.disabled = true;
-
-    // تنسيق الرسالة لتلجرام
-    const fullCaption = `
-🚜 *معدة جديدة للبيع*
------------------------
-* النوع:* ${name}
-* السنة:* ${year || 'غير محدد'}
-* التواصل:* ${phone}
-* الوصف:* ${desc || 'لا يوجد'}
-    `;
-
-    const formData = new FormData();
-    formData.append('caption', fullCaption);
-    formData.append('photo', photoFile);
-
-    try {
-        const response = await fetch('/api/send-telegram', {
-            method: 'POST',
-            body: formData
-        });
-
-        if (response.ok) {
-            alert("✅ تم الإرسال بنجاح!");
-            window.location.reload(); 
-        } else {
-            alert("❌ فشل الإرسال، راجع مفاتيح Vercel.");
-        }
-    } catch (error) {
-        alert("❌ خطأ في الاتصال بالسيرفر.");
-    } finally {
-        btn.innerText = "🚀 إرسال للتلجرام";
-        btn.disabled = false;
-    }
-}
-</script>
-
+    <div class="container">
+        <h2>إضافة معدة جديدة</h2>
+        <div class="form-group">
+            <label>اسم المعدة</label>
+            <input type="text" id="itemName" placeholder="مثلاً: حفار هيونداي 2024">
+        </div>
+        <div class="form-group">
+            <label>سنة الإصدار</label>
+            <input type="text" id="itemYear" placeholder="مثلاً: 2024">
+        </div>
+        <div class="form-group">
+            <label>رقم التواصل</label>
+            <input type="text" id="itemPhone" placeholder="09xxxx">
+        </div>
+        <div class="form-group">
+            <label>الوصف</label>
+            <textarea id="itemDesc" placeholder="تفاصيل المعدة..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>صورة المعدة</label>
+            <input type="file" id="itemFile" accept="image/*">
+        </div>
+        <button class="btn-upload" id="uploadBtn">🚀 رفع المعدة الآن</button>
+        <div id="loadingStatus" class="loading">جاري الرفع...</div>
+    </div>
+    <script type="module" src="add.js"></script>
 </body>
 </html>
