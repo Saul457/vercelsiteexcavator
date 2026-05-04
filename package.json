@@ -1,14 +1,9 @@
 {
-  "name": "excavator-sharing-site",
+  "name": "karasuma-project",
   "version": "1.0.0",
   "description": "Media sharing for heavy machinery",
-  "main": "index.html",
-  "dependencies": {
-    "axios": "^1.6.0",
-    "form-data": "^4.0.0",
-    "multiparty": "^4.2.3"
-  },
+  "type": "module",
   "scripts": {
-    "start": "serve ."
+    "start": "echo 'Vercel will handle this automatically'"
   }
 }
