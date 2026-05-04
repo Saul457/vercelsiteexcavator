@@ -3,67 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إضافة معدة ثقيلة</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <title>إضافة معدة جديدة</title>
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #eef2f3; margin: 0; padding: 20px; text-align: center; }
-        .form-card { max-width: 450px; background: white; padding: 25px; border-radius: 20px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; margin-bottom: 20px; }
-        label { display: block; margin-bottom: 10px; font-weight: bold; color: #555; text-align: right; }
-        input[type="file"] { margin-bottom: 20px; width: 100%; }
-        textarea { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 10px; resize: none; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
-        button { background-color: #f39c12; color: white; border: none; padding: 15px 30px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 15px; }
-        button:hover { background-color: #d35400; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; direction: rtl; }
+        .form-container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        h2 { text-align: center; color: #2c3e50; border-bottom: 3px solid #f39c12; padding-bottom: 10px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #34495e; }
+        input, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        input:focus, textarea:focus { border-color: #f39c12; outline: none; }
+        textarea { height: 80px; resize: none; }
+        .btn-send { width: 100%; padding: 15px; background-color: #f39c12; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-send:hover { background-color: #d35400; }
+        .btn-send:disabled { background-color: #ccc; }
     </style>
 </head>
 <body>
 
-<div class="form-card">
-    <h2>إرسال بيانات الحفارة</h2>
-    <label>📷 اختر صورة الحفارة:</label>
-    <input type="file" id="machine-image" accept="image/*">
+<div class="form-container">
+    <h2>➕ إضافة معدة للبيع</h2>
     
-    <label>📝 مواصفات المعدة:</label>
-    <textarea id="machine-desc" rows="6" placeholder="اكتب النوع، الموديل، السعر.."></textarea>
-    
-    <button id="send-btn" onclick="sendToTelegram()">إرسال الطلب بشكل آمن</button>
+    <label>🚜 نوع المعدة:</label>
+    <input type="text" id="machineName" placeholder="مثلاً: هيونداي داش ناين">
+
+    <label>📅 سنة الصنع:</label>
+    <input type="number" id="machineYear" placeholder="مثلاً: 2022">
+
+    <label>📞 رقم التواصل:</label>
+    <input type="tel" id="machinePhone" placeholder="09xxxxxxx">
+
+    <label>📝 وصف إضافي:</label>
+    <textarea id="machineDesc" placeholder="حالة الطلمبة، الهيدروليك، إلخ..."></textarea>
+
+    <label>📸 صورة المعدة:</label>
+    <input type="file" id="machinePhoto" accept="image/*">
+
+    <button onclick="sendData()" id="sendBtn" class="btn-send">🚀 إرسال للتلجرام</button>
 </div>
 
 <script>
-async function sendToTelegram() {
-    const photoInput = document.getElementById('machine-image');
-    const description = document.getElementById('machine-desc').value;
-    const btn = document.getElementById('send-btn');
+async function sendData() {
+    const btn = document.getElementById('sendBtn');
+    const name = document.getElementById('machineName').value;
+    const year = document.getElementById('machineYear').value;
+    const phone = document.getElementById('machinePhone').value;
+    const desc = document.getElementById('machineDesc').value;
+    const photoFile = document.getElementById('machinePhoto').files[0];
 
-    if (photoInput.files.length === 0 || description.trim() === "") {
-        alert("الرجاء إكمال كافة البيانات أولاً!");
+    if (!name || !phone || !photoFile) {
+        alert("يا هندسة، لازم تملأ الاسم والرقم وترفع الصورة!");
         return;
     }
 
     btn.innerText = "⏳ جاري الإرسال...";
     btn.disabled = true;
 
+    // تنسيق الرسالة لتلجرام
+    const fullCaption = `
+🚜 *معدة جديدة للبيع*
+-----------------------
+* النوع:* ${name}
+* السنة:* ${year || 'غير محدد'}
+* التواصل:* ${phone}
+* الوصف:* ${desc || 'لا يوجد'}
+    `;
+
     const formData = new FormData();
-    formData.append('photo', photoInput.files[0]);
-    formData.append('caption', description);
+    formData.append('caption', fullCaption);
+    formData.append('photo', photoFile);
 
     try {
-        // الربط الصحيح مع Vercel API
-        const response = await axios.post('/api/send-telegram', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
+        const response = await fetch('/api/send-telegram', {
+            method: 'POST',
+            body: formData
         });
 
-        if (response.status === 200) {
+        if (response.ok) {
             alert("✅ تم الإرسال بنجاح!");
-            document.getElementById('machine-desc').value = "";
-            photoInput.value = "";
+            window.location.reload(); 
+        } else {
+            alert("❌ فشل الإرسال، راجع مفاتيح Vercel.");
         }
     } catch (error) {
-        alert("❌ فشل الإرسال. تأكد من إعدادات السيرفر.");
-        console.error(error);
+        alert("❌ خطأ في الاتصال بالسيرفر.");
     } finally {
-        btn.innerText = "إرسال الطلب بشكل آمن";
+        btn.innerText = "🚀 إرسال للتلجرام";
         btn.disabled = false;
     }
 }
