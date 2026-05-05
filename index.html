@@ -42,8 +42,10 @@
     <p>&copy; 2026 - موقع الحفارات والمعدات</p>
 </footer>
 
-<script type="module">
-    import { SB_URL, SB_KEY } from './supabase-config.js';
+<script>
+    // القيم مباشرة لضمان العمل على كافة المتصفحات
+    const SB_URL = "https://kppufnwlkivacajmknqt.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwcHVmbndsa2l2YWNham1rbnF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4OTM4NTksImV4cCI6MjA5MzQ2OTg1OX0.7dzD-AYIX6HWgJJ8mU522mviRTgeV11kTazrkJl-YYk";
 
     async function fetchItems() {
         const grid = document.getElementById('itemsGrid');
@@ -57,10 +59,12 @@
                 }
             });
 
+            if (!response.ok) throw new Error("فشل في جلب البيانات");
+
             const items = await response.json();
             loader.style.display = 'none';
             
-            if (items.length === 0) {
+            if (!items || items.length === 0) {
                 grid.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>لا توجد معدات معروضة حالياً.</p>";
                 return;
             }
@@ -70,21 +74,23 @@
                     <img src="${item.image_url}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                     <div class="card-content">
                         <div class="card-title">${item.name}</div>
-                        <div class="info-item"><span class="info-label">📅 سنة الإصدار:</span> ${item.year || 'غير محدد'}</div>
-                        <div class="desc-text">${item.description}</div>
+                        <div class="info-item"><span class="info-label">📅 الموديل:</span> ${item.year || 'غير محدد'}</div>
+                        <div class="desc-text">${item.description || 'لا يوجد وصف'}</div>
                         <div class="contact-box">
-                            <a href="tel:${item.phone || '000'}">📞 ${item.phone || 'اتصل للمعاينة'}</a>
+                            <a href="tel:${item.phone}">📞 ${item.phone || 'اتصل للمعاينة'}</a>
                         </div>
                     </div>
                 </div>
             `).join('');
 
         } catch (error) {
+            console.error(error);
             loader.innerHTML = "حدث خطأ أثناء تحميل البيانات ❌";
         }
     }
 
-    fetchItems();
+    // تشغيل عند تحميل الصفحة
+    window.onload = fetchItems;
 </script>
 
 </body>
