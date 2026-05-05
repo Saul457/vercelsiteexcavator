@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const fileName = `${Date.now()}_${file.name}`;
+            // 1. رفع الصورة إلى Storage
             const uploadRes = await fetch(`${SB_URL}/storage/v1/object/excavators/${fileName}`, {
                 method: 'POST',
                 headers: { 
@@ -43,8 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!uploadRes.ok) throw new Error("خطأ في رفع الصورة");
 
+            // رابط الصورة المباشر
             const imageUrl = `${SB_URL}/storage/v1/object/public/excavators/${fileName}`;
 
+            // 2. حفظ البيانات في Database
             const dbRes = await fetch(`${SB_URL}/rest/v1/items`, {
                 method: 'POST',
                 headers: {
@@ -64,13 +67,24 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (dbRes.ok) {
-                const msg = `🚜 معدة جديدة:\nالاسم: ${name}\nالموديل: ${year}\nتلفون: ${phone}`;
-                await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(msg)}`);
+                // 3. إرسال الصورة والبيانات لتليجرام (التعديل هنا)
+                const telegramMsg = `🚜 *معدة جديدة للبيع* \n\n*النوع:* ${name}\n*الموديل:* ${year}\n*التواصل:* ${phone}\n*الوصف:* ${desc}`;
+
+                await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendPhoto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: TG_CHAT_ID,
+                        photo: imageUrl,
+                        caption: telegramMsg,
+                        parse_mode: 'Markdown'
+                    })
+                });
                 
-                alert("تم الرفع بنجاح");
+                alert("تم الرفع بنجاح ووصل التنبيه لتليجرام ✅");
                 window.location.href = 'index.html';
             } else {
-                throw new Error("خطأ في حفظ البيانات");
+                throw new Error("خطأ في حفظ البيانات في القاعدة");
             }
 
         } catch (err) {
